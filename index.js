@@ -1,6 +1,7 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
+const helmet = require("helmet");
 const connectDB = require("./config/db");
 
 dotenv.config();
@@ -8,12 +9,13 @@ connectDB();
 
 const app = express();
 app.use(express.json());
+app.use(helmet());
 
-// Updated allowed origins
+// Allowed origins
 const allowedOrigins = [
   "http://localhost:5173",
   "https://stately-maamoul-72ee22.netlify.app",
-  "https://guileless-dodol-54e12a.netlify.app"
+  "https://guileless-dodol-54e12a.netlify.app",
 ];
 
 app.use(
@@ -37,7 +39,19 @@ app.use("/api/auth", authRoutes);
 
 // Health check
 app.get("/", (req, res) => {
-  res.send("API is running...");
+  res.json({ success: true, message: "API is running..." });
+});
+
+// Global error handling for uncaught exceptions
+process.on("uncaughtException", (err) => {
+  console.error("❌ Uncaught Exception:", err);
+  process.exit(1);
+});
+
+// Global error handling for unhandled promise rejections
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("❌ Unhandled Rejection at:", promise, "reason:", reason);
+  process.exit(1);
 });
 
 const PORT = process.env.PORT || 5000;
